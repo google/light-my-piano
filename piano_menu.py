@@ -40,14 +40,8 @@ class Menu(object):
     self.waterfall = waterfall.Waterfall(self.piano_input_obj,
                                          self.piano_display, midi_file)
 
-  def ClearPianoInput(self):
-    while not self.piano_input_obj.user_input.empty():
-      user_cmd = self.piano_input_obj.user_input.get()
-      #if user_cmd[1] == 0 and user_cmd[0] in self.active_notes:
-      #  self.active_notes.remove(user_cmd[0])
-
   def MainLoop(self):
-    self.ClearPianoInput()
+    self.piano_input_obj.ClearInput()
     while True:
       self.piano_display.Clear()
       self.piano_display.DrawPiano(False)

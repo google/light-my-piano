@@ -45,6 +45,10 @@ class PianoInput(object):
     NAMES = [ 'C-', 'C#', 'D-', 'D#', 'E-', 'F-', 'F#', 'G-', 'G#', 'A-', 'A#', 'B-']
     return '%s%d'%(NAMES[note%12], note/12)
 
+  def ClearInput(self):
+    while not self.user_input.empty():
+      self.user_input.get()
+
   def GetPianoSignal(self):
     NOTE_ON = 0x90
     NOTE_OFF = 0x80
