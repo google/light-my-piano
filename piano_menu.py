@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 """
 Copyright 2015 Google Inc. All Rights Reserved.
 
@@ -23,9 +25,10 @@ import midi
 
 
 def GetMidiFiles(path="./"):
-  return filter(
-      lambda filename: filename.endswith('.mid'),
-      os.listdir('./'))
+  return sorted(
+          filter(lambda filename: filename.endswith('.mid'),
+                 os.listdir('./')),
+          key=lambda f: f.lower())
 
 
 class Menu(object):
