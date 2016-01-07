@@ -144,15 +144,17 @@ class Waterfall(object):
       if user_cmd[1] > 0:
           self.active_notes.add(user_cmd[0])
 
-  def UpdateScore(self):
+  def UpdateScore(self, slowdown_factor=1.0):
+    gain = max(1, int(100.0 / slowdown_factor))
+    loss = max(1, int(10.0 / slowdown_factor))
     for note in xrange(256):
       if self.state[note] >= 0:
         if note in self.active_notes:
-          self.score += 100
+          self.score += gain
         else:
-          self.score -= 10
+          self.score -= loss
       if self.state[note] < 0 and note in self.active_notes:
-        self.score -= 10
+        self.score -= loss
 
   def MenuRequested(self):
     return self.active_notes == set([
@@ -168,7 +170,7 @@ class Waterfall(object):
       if self.MenuRequested():
         break
 
-      self.UpdateScore()
+      self.UpdateScore(slowdown_factor)
       self.Draw()
 
       elapsed_wall_time = time.time() - prev_frame_wall_time
@@ -183,6 +185,8 @@ class Waterfall(object):
       if not self.Advance(delta):
         break
       prev_frame_wall_time = time.time()
+
+    return self.score
 
 
 def main():

@@ -38,7 +38,6 @@ class Keyboard(object):
     self.typed_string = ''
 
   def DrawKeyboard(self):
-    self.piano_output.Clear()
     self.piano_output.DrawPiano(False)
     for pos in xrange(26):
       self.piano_output.SetKeyText(_ALPHABET_POSITIONS[pos], 20,
@@ -47,15 +46,15 @@ class Keyboard(object):
     self.piano_output.SetKeyText(_ENTER_POSITION, 20, u"\u23CE")
 
   def DrawTypedString(self):
-    self.piano_output.SetKeyText(40, self.piano_output.KEYBOARD_HEIGHT + 50,
+    self.piano_output.SetKeyText(65, self.piano_output.KEYBOARD_HEIGHT + 50,
                                  self.typed_string)
 
   def GetTypedString(self):
     self.typed_string = ''
     self.piano_input.ClearInput()
+    text_widget = self.piano_output.SetKeyText(
+        65, self.piano_output.KEYBOARD_HEIGHT + 50, '')
     while True:
-      self.DrawKeyboard()
-      self.DrawTypedString()
       while self.piano_input.user_input.empty():
         time.sleep(0.1)
       user_cmd = self.piano_input.user_input.get()
@@ -65,8 +64,12 @@ class Keyboard(object):
       if note_pressed in _ALPHABET_POSITIONS:
         char_pressed = chr(ord('A') + _ALPHABET_POSITIONS.index(note_pressed))
         self.typed_string += char_pressed
+        self.piano_output.canvas.insert(text_widget, len(self.typed_string),
+                                        char_pressed)
       elif note_pressed == _BACKSPACE_POSITION:
         if self.typed_string:
           self.typed_string = self.typed_string[:-1]
+        self.piano_output.canvas.dchars(
+            text_widget, len(self.typed_string), len(self.typed_string))
       elif note_pressed == _ENTER_POSITION:
         return self.typed_string

@@ -21,6 +21,9 @@ import Queue
 class PianoInput(object):
   def __init__(self):
     self.user_input = Queue.Queue()
-    for note in xrange(37,60):
+    for note in xrange(37,90):
       self.user_input.put((note, 45))
 
+  def ClearInput(self):
+    while not self.user_input.empty():
+      self.user_input.get()

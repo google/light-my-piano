@@ -144,7 +144,7 @@ class PianoOutput(object):
     interval = noteToScreenInterval(note, self, False)
     x1 = interval[0]
     x2 = interval[1]
-    self.canvas.create_text((x1+x2)/2,
-                            self.CANVAS_HEIGHT - y,font=(None, 16),
-                            text=text)
+    return self.canvas.create_text((x1+x2)/2,
+                                   self.CANVAS_HEIGHT - y,font=(None, 16),
+                                   text=text)
 
