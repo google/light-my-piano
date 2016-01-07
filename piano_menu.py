@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 Copyright 2015 Google Inc. All Rights Reserved.
 
@@ -53,8 +51,8 @@ class Menu(object):
     while True:
       self.piano_display.Clear()
       self.piano_display.DrawPiano(False)
-      self.piano_display.SetKeyText(36, 20, "−")
-      self.piano_display.SetKeyText(40, 20, "➕")
+      self.piano_display.SetKeyText(36, 20, u"\u2212")
+      self.piano_display.SetKeyText(40, 20, u"\u2795")
       self.piano_display.SetKeyText(38, self.piano_display.KEYBOARD_HEIGHT + 50,
                                     "    Slowdown")
       self.piano_display.SetKeyText(38, self.piano_display.KEYBOARD_HEIGHT + 25,
@@ -79,12 +77,12 @@ class Menu(object):
             self.slowdown = max(0.1, self.slowdown - 0.1)
           if user_cmd[0] == 40:
             self.slowdown = self.slowdown + 0.1
-          if user_cmd[0] == 36 + 12:
+          if user_cmd[0] == 40 + 12:
             self.current_song =  (self.current_song + 1) % len(self.songs)
             midi_file = midi.MidiFile(self.songs[self.current_song])
             self.waterfall = waterfall.Waterfall(self.piano_input_obj,
                                                  self.piano_display, midi_file)
-          if user_cmd[0] == 40 + 12:
+          if user_cmd[0] == 36 + 12:
             self.current_song = (self.current_song + len(self.songs) - 1) % (
                 len(self.songs))
             midi_file = midi.MidiFile(self.songs[self.current_song])
