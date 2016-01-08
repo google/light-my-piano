@@ -18,13 +18,16 @@ limitations under the License.
 import Queue
 import thread
 import usb.core
+import usb.util
 
 class PianoInput(object):
   def __init__(self):
     self.user_input = Queue.Queue()
-    self.dev = usb.core.find(idVendor=0x1a86, idProduct=0x752d)
+    self.dev = usb.core.find(custom_match=PianoInput.IsMidiUsbDevice)
+    if not self.dev:
+      raise IOError('Could not find a USB MIDI Streaming device')
     print self.dev
-    print self.dev[0].interfaces()[1].endpoints()
+
     self.reattach0 = False
     self.reattach1 = False
     # detach from kernel device
@@ -37,23 +40,48 @@ class PianoInput(object):
         self.reattach1 = True
         self.dev.detach_kernel_driver(1)
 
-    #In a loop, read midi commands from USB
     self.dev.set_configuration()
-    thread.start_new_thread(self.GetPianoSignal, tuple())
+
+    # Determine the endpoint address for MIDI Input.
+    iface = PianoInput.GetMidiStreamingInterface(self.dev)
+    endpoint_address = None
+    for endpoint in iface.endpoints():
+      if endpoint.bEndpointAddress & 0x80:
+        # Found input endpoint.
+        endpoint_address = endpoint.bEndpointAddress
+        break
+    if not endpoint_address:
+      raise IOError('Cannot find MIDI Input endpoint in USB MIDI device.')
+
+    thread.start_new_thread(self.GetPianoSignal, (endpoint_address, ))
+
+  @staticmethod
+  def IsMidiUsbDevice(dev):
+    return PianoInput.GetMidiStreamingInterface(dev) is not None
+
+  @staticmethod
+  def GetMidiStreamingInterface(dev):
+    for cfg in dev:
+      iface = usb.util.find_descriptor(cfg, bInterfaceClass=0x01,
+                                       bInterfaceSubClass=0x03)
+      if iface:
+        return iface
+    return None 
 
   def GetNote(self, note):
-    NAMES = [ 'C-', 'C#', 'D-', 'D#', 'E-', 'F-', 'F#', 'G-', 'G#', 'A-', 'A#', 'B-']
-    return '%s%d'%(NAMES[note%12], note/12)
+    NAMES = ['C-', 'C#', 'D-', 'D#', 'E-', 'F-', 'F#', 'G-', 'G#', 'A-',
+             'A#', 'B-']
+    return '%s%d' % (NAMES[note % 12], note // 12)
 
   def ClearInput(self):
     while not self.user_input.empty():
       self.user_input.get()
 
-  def GetPianoSignal(self):
+  def GetPianoSignal(self, endpoint_address):
     NOTE_ON = 0x90
     NOTE_OFF = 0x80
     while True:
-      ret= self.dev.read(0x82, 32, 10000)
+      ret= self.dev.read(endpoint_address, 32, 10000)
       midiCmd = ret[1]
       if (midiCmd == NOTE_ON or midiCmd == NOTE_OFF):
           note = ret[2]
