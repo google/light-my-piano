@@ -145,8 +145,8 @@ class Waterfall(object):
           self.active_notes.add(user_cmd[0])
 
   def UpdateScore(self, slowdown_factor=1.0):
-    gain = max(1, int(100.0 / slowdown_factor))
-    loss = max(1, int(10.0 / slowdown_factor))
+    gain = max(1, int(300.0 / slowdown_factor / slowdown_factor))
+    loss = max(1, int(50.0 / slowdown_factor / slowdown_factor))
     for note in xrange(256):
       if self.state[note] >= 0:
         if note in self.active_notes:

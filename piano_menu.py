@@ -18,6 +18,7 @@ import os
 import pickle
 import sys
 
+import keyboard
 import midi
 import piano_output
 import piano_input
@@ -42,7 +43,7 @@ class Menu(object):
     midi_file = midi.MidiFile(self.songs[self.current_song])
     self.waterfall = waterfall.Waterfall(self.piano_input_obj,
                                          self.piano_display, midi_file)
-    self.high_scores = self.LoadHighScores()
+    self.LoadHighScores()
 
   def LoadHighScores(self):
     try:
@@ -59,38 +60,45 @@ class Menu(object):
     except IOError:
         print 'Error: Failed to save high scores file highscores.pickle'
 
-  def CheckHighScore(self, score):
+  def ShowHighScore(self):
     current_song_name = self.songs[self.current_song]
     if current_song_name in self.high_scores:
       self.piano_display.SetKeyText(
           65, self.piano_display.KEYBOARD_HEIGHT + 200,
-          "Previous best: %.0f" % self.high_scores[current_song_name][0])
+          "Previous best: %.0f by %s" % self.high_scores[current_song_name])
 
-    if (current_song_name in self.high_scores and
-        self.high_scores[current_song_name][0] >= score):
+    if self.score:
       self.piano_display.SetKeyText(
           65, self.piano_display.KEYBOARD_HEIGHT + 150,
-          "Your score: %.0f" % score)
-      return  # No new high score.
+          "Your score: %.0f" % self.score)
 
-    self.piano_display.SetKeyText(
-        65, self.piano_display.KEYBOARD_HEIGHT + 150,
-        "New High Score: %.0f" % score)
+  def CheckHighScore(self):
+    current_song_name = self.songs[self.current_song]
+
+    if not self.score:
+      return  # No score, hence no new high score.
+    if (current_song_name in self.high_scores and
+        self.score <= self.high_scores[current_song_name][0]):
+      return  # Current score is lower than high score.
 
     self.piano_display.SetKeyText(
         65, self.piano_display.KEYBOARD_HEIGHT + 100,
-        "Enter your name:")
+        "New High Score! Enter your name:")
+
+    self.piano_display.Refresh()
 
     k = keyboard.Keyboard(self.piano_input_obj, self.piano_display)
     your_name = k.GetTypedString()
-    self.high_scores[current_song_name] = (score, your_name)
+    self.high_scores[current_song_name] = (self.score, your_name)
     self.SaveHighScores()
 
   def MainLoop(self):
     self.piano_input_obj.ClearInput()
+    self.score = None
     while True:
       self.piano_display.Clear()
       self.piano_display.DrawPiano(False)
+      self.ShowHighScore()
       self.piano_display.SetKeyText(36, 20, u"\u2212")
       self.piano_display.SetKeyText(40, 20, u"\u2795")
       self.piano_display.SetKeyText(38, self.piano_display.KEYBOARD_HEIGHT + 50,
@@ -118,19 +126,22 @@ class Menu(object):
           if user_cmd[0] == 40:
             self.slowdown = self.slowdown + 0.1
           if user_cmd[0] == 40 + 12:
+            self.score = None
             self.current_song =  (self.current_song + 1) % len(self.songs)
             midi_file = midi.MidiFile(self.songs[self.current_song])
             self.waterfall = waterfall.Waterfall(self.piano_input_obj,
                                                  self.piano_display, midi_file)
           if user_cmd[0] == 36 + 12:
+            self.score = None
             self.current_song = (self.current_song + len(self.songs) - 1) % (
                 len(self.songs))
             midi_file = midi.MidiFile(self.songs[self.current_song])
             self.waterfall = waterfall.Waterfall(self.piano_input_obj,
                                                  self.piano_display, midi_file)
           if user_cmd[0] == 38 + 12:
-            score = self.waterfall.Continue(self.slowdown)
-            self.CheckHighScore(score)
+            self.score = self.waterfall.Continue(self.slowdown)
+            self.ShowHighScore()
+            self.CheckHighScore()
 
 
 def main():

@@ -22,7 +22,7 @@ import usb.core
 class PianoInput(object):
   def __init__(self):
     self.user_input = Queue.Queue()
-    self.dev = usb.core.find(idVendor=0xfc08, idProduct=0x0101)
+    self.dev = usb.core.find(idVendor=0x1a86, idProduct=0x752d)
     print self.dev
     print self.dev[0].interfaces()[1].endpoints()
     self.reattach0 = False
@@ -53,7 +53,7 @@ class PianoInput(object):
     NOTE_ON = 0x90
     NOTE_OFF = 0x80
     while True:
-      ret= self.dev.read(0x81, 32, 10000)
+      ret= self.dev.read(0x82, 32, 10000)
       midiCmd = ret[1]
       if (midiCmd == NOTE_ON or midiCmd == NOTE_OFF):
           note = ret[2]
