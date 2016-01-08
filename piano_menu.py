@@ -92,6 +92,11 @@ class Menu(object):
     self.high_scores[current_song_name] = (self.score, your_name)
     self.SaveHighScores()
 
+  def CreateWaterfall(self):
+    midi_file = midi.MidiFile(self.songs[self.current_song])
+    self.waterfall = waterfall.Waterfall(self.piano_input_obj,
+                                         self.piano_display, midi_file)
+
   def MainLoop(self):
     self.piano_input_obj.ClearInput()
     self.score = None
@@ -127,10 +132,8 @@ class Menu(object):
             self.slowdown = self.slowdown + 0.1
           if user_cmd[0] == 40 + 12:
             self.score = None
-            self.current_song =  (self.current_song + 1) % len(self.songs)
-            midi_file = midi.MidiFile(self.songs[self.current_song])
-            self.waterfall = waterfall.Waterfall(self.piano_input_obj,
-                                                 self.piano_display, midi_file)
+            self.current_song = (self.current_song + 1) % len(self.songs)
+            self.CreateWaterfall()
           if user_cmd[0] == 36 + 12:
             self.score = None
             self.current_song = (self.current_song + len(self.songs) - 1) % (
@@ -139,6 +142,9 @@ class Menu(object):
             self.waterfall = waterfall.Waterfall(self.piano_input_obj,
                                                  self.piano_display, midi_file)
           if user_cmd[0] == 38 + 12:
+            if self.waterfall.EndOfSong():
+              # Reload midi file, because it was destroyed during playback
+              self.CreateWaterfall()
             self.score = self.waterfall.Continue(self.slowdown)
             self.ShowHighScore()
             self.CheckHighScore()

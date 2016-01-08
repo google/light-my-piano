@@ -61,11 +61,14 @@ class Waterfall(object):
         longestTrack = track
     return longestTrack
 
+  def EndOfSong(self):
+    return self.n_event >= len(self.midi_track.events)
+
   def Advance(self, delta):
     """Advances waterfall by delta ticks.
     Returns False iff EOF reached.
     """
-    while self.n_event < len(self.midi_track.events):
+    while not self.EndOfSong():
       event = self.midi_track.events[self.n_event]
       if event.delta >= delta:
         event.delta -= delta
@@ -80,7 +83,6 @@ class Waterfall(object):
         self.state[event.note] = -1
       elif event.cmd == 0x90:
         self.state[event.note] = self.time
-    return self.n_event < len(self.midi_track.events)
 
   def WaterfallNoteColor(self, note):
     if note in self.active_notes:
@@ -165,7 +167,8 @@ class Waterfall(object):
     frames_per_sec = 15
     prev_frame_wall_time = time.time()
     self.active_notes = set()
-    while True:
+
+    while not self.EndOfSong():
       self.UpdatePianoInput()
       if self.MenuRequested():
         break
@@ -182,8 +185,7 @@ class Waterfall(object):
                   slowdown_factor)
       if delta < 1:
         delta = 1
-      if not self.Advance(delta):
-        break
+      self.Advance(delta)
       prev_frame_wall_time = time.time()
 
     return self.score
