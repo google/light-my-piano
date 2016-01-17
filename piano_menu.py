@@ -39,7 +39,16 @@ class Menu(object):
     self.songs = GetMidiFiles()
     self.current_song = 0
     self.piano_display = piano_output.PianoOutput()
-    self.piano_input_obj = piano_input.PianoInput()
+    try:
+      self.piano_input_obj = piano_input.PianoInput()
+    except IOError:
+      print "Using mock input instead of usb one."
+      print "To install pyusb run:"
+      print "    sudo apt-get install python libusb-1.0-0"
+      print "    sudo pip install pyusb --pre"
+      self.piano_input_obj = piano_input_mock.PianoInput()
+
+
     midi_file = midi.MidiFile(self.songs[self.current_song])
     self.waterfall = waterfall.Waterfall(self.piano_input_obj,
                                          self.piano_display, midi_file)

@@ -17,13 +17,26 @@ limitations under the License.
 """
 
 import Queue
+import thread
+import time
 
 class PianoInput(object):
   def __init__(self):
     self.user_input = Queue.Queue()
-    for note in xrange(37,90):
-      self.user_input.put((note, 45))
+    thread.start_new_thread(self.GetPianoSignal, ())
 
   def ClearInput(self):
     while not self.user_input.empty():
       self.user_input.get()
+
+  def GetPianoSignal(self):
+    while True:
+      try:
+        print "Important notes: '-'=36 '+'=40  '<'=48 'Play'=50 '>'=52"
+        note = int(raw_input("<note> (e.g. '37'): "))
+        self.user_input.put((note, 50))
+        time.sleep(1)
+        self.user_input.put((note, 0))
+      except:
+        print "Bad input"
+
