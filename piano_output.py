@@ -66,15 +66,15 @@ def noteToScreenInterval(note, waterfall, wide):
 class PianoOutput(object):
   LOWEST_NOTE = 36
   HIGHEST_NOTE = 96
-  CANVAS_WIDTH = 1100  # changed by constructor
-  KEYBOARD_HEIGHT = 200
   WHITE_NOTES = (0,2,4,5,7,9,11)
-  CANVAS_HEIGHT = KEYBOARD_HEIGHT + 300
 
   def __init__(self):
     self.tk_root = tk.Tk()
-    self.CANVAS_WIDTH = self.tk_root.winfo_screenwidth()
     self.tk_root.attributes("-fullscreen", True)
+    self.CANVAS_WIDTH = self.tk_root.winfo_screenwidth()
+    self.CANVAS_HEIGHT = self.tk_root.winfo_screenheight()
+    self.KEYBOARD_HEIGHT = int(self.CANVAS_HEIGHT * 0.22)
+    self.CANVAS_HEIGHT = self.KEYBOARD_HEIGHT + 300
 
     self.canvas = tk.Canvas(self.tk_root,
                             width=self.CANVAS_WIDTH,
