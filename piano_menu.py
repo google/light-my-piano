@@ -17,6 +17,7 @@ limitations under the License.
 import os
 import pickle
 import sys
+import time
 
 import keyboard
 import midi
@@ -123,6 +124,8 @@ class Menu(object):
       self.piano_display.SetKeyText(38 + 12, 20, u"\u266a")
 
       self.piano_display.Refresh()
+      if self.piano_input_obj.user_input.empty():
+        time.sleep(0.1)  # Avoid hogging the CPU when idle.
       while not self.piano_input_obj.user_input.empty():
         user_cmd = self.piano_input_obj.user_input.get()
         if user_cmd[1] > 0:
