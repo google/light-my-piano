@@ -23,9 +23,16 @@ _ALPHABET_POSITIONS = [
     36, 38, 40, 41, 43, 45, 47,
     48, 50, 52, 53, 55, 57, 59,
     60, 62, 64, 65, 67, 69, 71,
-    72, 74, 76, 77, 79]
+    72, 74, 76, 77, 79, 81, 83,
+    84]
+_ALPHABET_VALUES = [
+    'A', 'B', 'C', 'D', 'E', 'F', 'G',
+    'H', 'I', 'J', 'K', 'L', 'M', 'N',
+    'O', 'P', 'Q', 'R', 'S', 'T', 'U',
+    'V', 'W', 'X', 'Y', 'Z', '@', '.',
+    '-']
 
-_BACKSPACE_POSITION = 84
+_BACKSPACE_POSITION = 86
 _ENTER_POSITION = 89
 
 
@@ -39,9 +46,8 @@ class Keyboard(object):
 
   def DrawKeyboard(self):
     self.piano_output.DrawPiano(False)
-    for pos in xrange(26):
-      self.piano_output.SetKeyText(_ALPHABET_POSITIONS[pos], 20,
-                                   chr(pos + ord('A')))
+    for pos, key in enumerate(_ALPHABET_POSITIONS):
+      self.piano_output.SetKeyText(key, 20, _ALPHABET_VALUES[pos])
     self.piano_output.SetKeyText(_BACKSPACE_POSITION, 20, u"\u2190")
     self.piano_output.SetKeyText(_ENTER_POSITION, 20, u"\u23CE")
     self.piano_output.Refresh()
@@ -64,7 +70,7 @@ class Keyboard(object):
         continue
       note_pressed = user_cmd[0]
       if note_pressed in _ALPHABET_POSITIONS:
-        char_pressed = chr(ord('A') + _ALPHABET_POSITIONS.index(note_pressed))
+        char_pressed = _ALPHABET_VALUES[_ALPHABET_POSITIONS.index(note_pressed)]
         self.typed_string += char_pressed
         self.piano_output.canvas.insert(text_widget, len(self.typed_string),
                                         char_pressed)
