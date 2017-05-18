@@ -85,6 +85,9 @@ class PianoInput(object):
       midiCmd = ret[1]
       if (midiCmd == NOTE_ON or midiCmd == NOTE_OFF):
           note = ret[2]
-          volume = ret[3]
+          if midiCmd == NOTE_OFF:
+            volume = 0
+          else:
+            volume = ret[3]
           print note, (midiCmd, self.GetNote(note).lower(), volume)
           self.user_input.put((note, volume))
