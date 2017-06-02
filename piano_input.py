@@ -81,7 +81,7 @@ class PianoInput(object):
     NOTE_ON = 0x90
     NOTE_OFF = 0x80
     while True:
-      ret= self.dev.read(endpoint_address, 32, 10000)
+      ret = self.dev.read(endpoint_address, 32, 10000)
       midiCmd = ret[1]
       if (midiCmd == NOTE_ON or midiCmd == NOTE_OFF):
           note = ret[2]
