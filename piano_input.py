@@ -17,12 +17,17 @@ limitations under the License.
 
 import Queue
 import thread
+import time
 import usb.core
 import usb.util
 
 class PianoInput(object):
   def __init__(self):
     self.user_input = Queue.Queue()
+    endpoint_address = self._attach_device()
+    thread.start_new_thread(self.GetPianoSignal, (endpoint_address, ))
+
+  def _attach_device(self):
     self.dev = usb.core.find(custom_match=PianoInput.IsMidiUsbDevice)
     if not self.dev:
       raise IOError('Could not find a USB MIDI Streaming device')
@@ -53,7 +58,7 @@ class PianoInput(object):
     if not endpoint_address:
       raise IOError('Cannot find MIDI Input endpoint in USB MIDI device.')
 
-    thread.start_new_thread(self.GetPianoSignal, (endpoint_address, ))
+    return endpoint_address
 
   @staticmethod
   def IsMidiUsbDevice(dev):
@@ -81,13 +86,23 @@ class PianoInput(object):
     NOTE_ON = 0x90
     NOTE_OFF = 0x80
     while True:
-      ret = self.dev.read(endpoint_address, 32, 10000)
+      try:
+        ret = self.dev.read(endpoint_address, 32, 10000)
+      except usb.core.USBError:
+        # Attempt to reconnect
+        endpoint_address = None
+        while not endpoint_address:
+          try:
+            print('Attempting to reconnect...')
+            endpoint_address = self._attach_device()
+          except Exception as ex:
+            print('Connection failed (%s), waiting 1 second...' % ex)
+            time.sleep(1.0)
       midiCmd = ret[1]
       if (midiCmd == NOTE_ON or midiCmd == NOTE_OFF):
           note = ret[2]
+          volume = ret[3]
           if midiCmd == NOTE_OFF:
             volume = 0
-          else:
-            volume = ret[3]
           print note, (midiCmd, self.GetNote(note).lower(), volume)
           self.user_input.put((note, volume))
